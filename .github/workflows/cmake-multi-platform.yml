@@ -90,7 +90,7 @@ jobs:
       run: |
         sudo apt-get install -y xvfb
         echo "Running program with 5s timeout..."
-        xvfb-run -a timeout 5s ./build/your_executable_name || {
+        xvfb-run -a timeout 5s ./build/voxel_app || {
           code=$?
           if [ $code -eq 124 ]; then
             echo "Program timed out after 5s seconds"
@@ -102,7 +102,7 @@ jobs:
         elif [ "$RUNNER_OS" = "Windows" ]; then
           echo "Starting program..."
           powershell -Command "
-            $process = Start-Process -FilePath '.\\build\\Release\\your_executable_name.exe' -PassThru;
+            $process = Start-Process -FilePath '.\\build\\Release\\voxel_app.exe' -PassThru;
             if (-not $process.WaitForExit(15000)) {
               Write-Host 'Program timed out after 5s seconds';
               $process.Kill();

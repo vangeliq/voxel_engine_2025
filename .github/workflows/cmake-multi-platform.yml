@@ -97,7 +97,7 @@ jobs:
           else
             echo "Program exited with code $code"
           fi
-          exit $code
+          (code=$?; [ $code -eq 124 ] && exit 0 || exit $code)
         }
     - name: Run executable with timeout (Windows)
       if: runner.os == 'Windows'

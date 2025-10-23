@@ -104,7 +104,7 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "Starting program..."
-        $process = Start-Process -FilePath ".\build\Release\voxel_app.exe" -PassThru
+        $process = Start-Process -FilePath ".\build\bin\Release\voxel_app.exe" -PassThru
         if (-not $process.WaitForExit(5000)) {
           Write-Host "Program timed out after 5 seconds"
           $process.Kill()

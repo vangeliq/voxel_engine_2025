@@ -26,6 +26,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
+        cpp_standard: [16,17]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -75,15 +76,42 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DVOXEL_WITH_GL=ON ..
+        -DCMAKE_CXX_STANDARD=${{ matrix.cpp_standard }}
+        -DCMAKE_CXX_STANDARD_REQUIRED=ON
+        -DVOXEL_WITH_GL=ON
         -S ${{ github.workspace }}
-
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+    - name: Run executable with timeout
+    # since we don't have any tests just try to run the executable and if it "works" we can say it succeeded building and running
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get install -y xvfb
+        echo "Running program with 5s timeout..."
+        xvfb-run -a timeout 5s ./build/your_executable_name || {
+          code=$?
+          if [ $code -eq 124 ]; then
+            echo "Program timed out after 5s seconds"
+          else
+            echo "Program exited with code $code"
+          fi
+          exit $code
+        }
+        elif [ "$RUNNER_OS" = "Windows" ]; then
+          echo "Starting program..."
+          powershell -Command "
+            $process = Start-Process -FilePath '.\\build\\Release\\your_executable_name.exe' -PassThru;
+            if (-not $process.WaitForExit(15000)) {
+              Write-Host 'Program timed out after 5s seconds';
+              $process.Kill();
+              exit 1;
+            }
+            if ($process.ExitCode -ne 0) {
+              Write-Host \"Program exited with code $($process.ExitCode)\";
+              exit $process.ExitCode;
+            }
+          "
+        fi
+      shell: bash

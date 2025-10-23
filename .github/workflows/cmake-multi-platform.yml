@@ -116,7 +116,7 @@ jobs:
         }
     - name: Upload build folder artifact (on failure)
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: voxel_build
         path: ${{ github.workspace }}/build

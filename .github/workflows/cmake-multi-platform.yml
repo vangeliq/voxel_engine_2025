@@ -90,7 +90,7 @@ jobs:
       run: |
         sudo apt-get install -y xvfb
         echo "Running program with 5s timeout..."
-        xvfb-run -a timeout 5s ./build/voxel_app || {
+        xvfb-run -a timeout 5s ./build/bin/voxel_app || {
           code=$?
           if [ $code -eq 124 ]; then
             echo "Program timed out after 5s seconds"
